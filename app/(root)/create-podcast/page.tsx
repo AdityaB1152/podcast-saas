@@ -25,16 +25,18 @@ import {
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
 import { Textarea } from "@/components/ui/textarea"
-
-import { Loader } from "lucide-react"
+import GeneratePodcast from "@/components/GeneratePodcast"
+import GenerateThumbnail from "@/components/GenerateThumbnail"
+import { AlertCircle, Loader } from "lucide-react"
 import { Id } from "@/convex/_generated/dataModel"
-import {useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/components/ui/use-toast"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { useRouter } from "next/navigation"
-import GeneratePodcast from "@/components/GeneratePodcast"
-import GenerateThumbnail from "@/components/GenerateThumbnail"
+import { VoiceType } from "@/types"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const voiceCategories = ['alloy', 'shimmer', 'nova', 'echo', 'fable', 'onyx'];
 
@@ -58,7 +60,7 @@ const CreatePodcast = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // const createPodcast = useMutation(api.podcasts.createPodcast)
+  const createPodcast = useMutation(api.podcasts.createPodcast)
 
   const { toast } = useToast()
   // 1. Define your form.
@@ -71,44 +73,54 @@ const CreatePodcast = () => {
   })
  
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    // try {
-    //   setIsSubmitting(true);
-    //   if(!audioUrl || !imageUrl || !voiceType) {
-    //     toast({
-    //       title: 'Please generate audio and image',
-    //     })
-    //     setIsSubmitting(false);
-    //     throw new Error('Please generate audio and image')
-    //   }
+    try {
+      setIsSubmitting(true);
+      if(!audioUrl || !imageUrl || !voiceType) {
+        toast({
+          title: 'Please generate audio and image',
+        })
+        setIsSubmitting(false);
+        throw new Error('Please generate audio and image')
+      }
 
-    //   const podcast = await createPodcast({
-    //     podcastTitle: data.podcastTitle,
-    //     podcastDescription: data.podcastDescription,
-    //     audioUrl,
-    //     imageUrl,
-    //     voiceType,
-    //     imagePrompt,
-    //     voicePrompt,
-    //     views: 0,
-    //     audioDuration,
-    //     audioStorageId: audioStorageId!,
-    //     imageStorageId: imageStorageId!,
-    //   })
-    //   toast({ title: 'Podcast created' })
-    //   setIsSubmitting(false);
-    //   router.push('/')
-    // } catch (error) {
-    //   console.log(error);
-    //   toast({
-    //     title: 'Error',
-    //     variant: 'destructive',
-    //   })
-    //   setIsSubmitting(false);
-    // }
+      const podcast = await createPodcast({
+        podcastTitle: data.podcastTitle,
+        podcastDescription: data.podcastDescription,
+        audioUrl,
+        imageUrl,
+        voiceType,
+        imagePrompt,
+        voicePrompt,
+        views: 0,
+        audioDuration,
+        audioStorageId: audioStorageId!,
+        imageStorageId: imageStorageId!,
+      })
+      toast({ title: 'Podcast created' })
+      setIsSubmitting(false);
+      router.push('/')
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: 'Error',
+        variant: 'destructive',
+      })
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <section className="mt-10 flex flex-col">
+      <div className="bg-red-500">
+       <Alert variant="destructive">
+      <AlertCircle/>
+      <AlertTitle>Error</AlertTitle>
+      <AlertDescription>
+        Due to changes in OpenAI's Policy Audio and Image generation is not working! Looking for an alternative Sorry for the inconvinience.
+        You can still check out my code at github.com/AdityaB1152/podcast-saas
+      </AlertDescription>
+    </Alert>
+    </div>
       <h1 className="text-20 font-bold text-white-1">Create Podcast</h1>
 
       <Form {...form}>
@@ -172,7 +184,7 @@ const CreatePodcast = () => {
               <GeneratePodcast 
                 setAudioStorageId={setAudioStorageId}
                 setAudio={setAudioUrl}
-                voiceType={voiceType!}
+                voiceType={voiceType! as VoiceType}
                 audio={audioUrl}
                 voicePrompt={voicePrompt}
                 setVoicePrompt={setVoicePrompt}

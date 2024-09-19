@@ -3,7 +3,7 @@
 export default {
     providers:[{
         domain:"https://ultimate-bull-31.clerk.accounts.dev",
-        applicationId:"convex",
+        applicationID:"convex",
     },
 ]
-};
+}; 
